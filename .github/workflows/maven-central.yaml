@@ -1,0 +1,21 @@
+on:
+  workflow_dispatch:
+
+jobs:
+  create_or_update_secrets:
+    strategy:
+      matrix:
+        repo: [ asciidoctorj-decisiontable-extension, asciidoctorj-gitchangelog-extension, asciidoctorj-office-extension, asciidoctorj-extension-support-framework, asciidoctorj-liquibase-extension ]
+        secretName: [ OSSRH_GPG_SECRET_KEY, OSSRH_GPG_SECRET_KEY_PASSWORD, OSSRH_TOKEN, OSSRH_USERNAME ]
+    name: "${{ matrix.repo }}[${{ matrix.secretName }}]"
+    runs-on: ubuntu-latest
+    env:
+      SECRET_VALUE: ${{ secrets[matrix.secretName] }}
+    steps:
+      - uses: gliech/create-github-secret-action@v1
+        if: ${{ env.SECRET_VALUE != '' }}
+        with:
+          location: ${{ github.repository_owner }}/${{ matrix.repo }}
+          name: ${{ matrix.secretName }}
+          value: ${{ secrets[matrix.secretName] }}
+          pa_token: ${{ secrets.PA_SECRETS_MANAGEMENT }}
